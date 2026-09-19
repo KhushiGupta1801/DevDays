@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Dev-Translator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+  <div class="container mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-5xl font-bold text-white mb-2">
+        🚀 Resume Dev-Translator
+      </h1>
+      <p class="text-purple-200 text-lg">
+        Transform casual project descriptions into corporate tech-speak
+      </p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+      <!-- Left Panel: Input -->
+      <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+        <div class="mb-6">
+          <label for="casualText" class="block text-xl font-semibold text-slate-800 mb-3">
+            💭 What I Actually Did
+          </label>
+          <textarea
+            id="casualText"
+            placeholder="E.g., 'I built a website that shows cat pics. Used React and made it fast with some caching stuff. Also fixed a bug where the images wouldn't load.'"
+            class="w-full h-72 p-4 border-2 border-purple-300 rounded-lg focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none resize-none text-slate-700 font-medium"
+          ></textarea>
+        </div>
+        <button
+          id="corporatifyBtn"
+          onclick="corporatify()"
+          class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 text-lg shadow-lg"
+        >
+          ✨ Corporate-ify!
+        </button>
+      </div>
+
+      <!-- Right Panel: Output -->
+      <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+        <div class="mb-6">
+          <label for="corporateText" class="block text-xl font-semibold text-slate-800 mb-3">
+            💼 What Corporate Thinks I Did
+          </label>
+          <div
+            id="corporateText"
+            class="w-full h-72 p-4 border-2 border-purple-300 rounded-lg bg-white overflow-y-auto whitespace-pre-wrap"
+          >
+            <p class="text-slate-500 italic">Your corporate translation will appear here...</p>
+          </div>
+        </div>
+        <button
+          id="copyBtn"
+          onclick="copyToClipboard()"
+          class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          📋 Copy to Clipboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="mt-12 text-center max-w-4xl mx-auto">
+      <div class="glass-effect rounded-lg p-6">
+        <p class="text-slate-700">
+          <span class="font-semibold">💡 Pro Tip:</span> Watch your casual project descriptions transform into impressive corporate jargon. Perfect for LinkedIn, resumes, and impressing your manager!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const casualTextInput = document.getElementById('casualText');
+    const corporateTextOutput = document.getElementById('corporateText');
+    const corporatifyBtn = document.getElementById('corporatifyBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    async function corporatify() {
+      const casualText = casualTextInput.value.trim();
+
+      if (!casualText) {
+        alert('Please enter some text to translate!');
+        return;
+      }
+
+      corporatifyBtn.disabled = true;
+      corporatifyBtn.textContent = '⏳ Translating...';
+
+      try {
+        const response = await fetch('/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ casualText })
+        });
+
+        if (!response.ok) {
+          throw new Error('Translation failed');
+        }
+
+        const data = await response.json();
+        corporateTextOutput.innerHTML = `<p class="text-slate-700 fade-in">${data.corporateText}</p>`;
+        copyBtn.disabled = false;
+      } catch (error) {
+        corporateTextOutput.innerHTML = `<p class="text-red-600 italic fade-in">Error: ${error.message}</p>`;
+        copyBtn.disabled = true;
+      } finally {
+        corporatifyBtn.disabled = false;
+        corporatifyBtn.textContent = '✨ Corporate-ify!';
+      }
+    }
+
+    function copyToClipboard() {
+      const text = corporateTextOutput.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    // Allow Enter key to translate
+    casualTextInput.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        corporatify();
+      }
+    });
+  </script>
+</body>
+</html>
